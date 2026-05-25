@@ -2,6 +2,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  ipcMain,
   shell,
 } from "electron";
 import { ChildProcess, spawn } from "child_process";
@@ -14,6 +15,12 @@ import {
   getPythonLaunchConfig,
   getRendererUrl,
 } from "./paths";
+import {
+  checkForUpdates,
+  downloadPendingUpdate,
+  getCurrentVersion,
+  runInstallerAndQuit,
+} from "./updater";
 
 const HEALTH_PATH = "/api/health";
 const HEALTH_TIMEOUT_MS = 30_000;
@@ -22,6 +29,35 @@ const HEALTH_POLL_MS = 300;
 let mainWindow: BrowserWindow | null = null;
 let pythonProcess: ChildProcess | null = null;
 let backendPort = 5000;
+let quittingForUpdate = false;
+
+function registerUpdateHandlers(): void {
+  ipcMain.handle("update:get-version", () => getCurrentVersion());
+  ipcMain.handle("update:is-packaged", () => app.isPackaged);
+
+  ipcMain.handle("update:check", async () => checkForUpdates());
+
+  ipcMain.handle("update:download-and-install", async () => {
+    try {
+      const installerPath = await downloadPendingUpdate((progress) => {
+        mainWindow?.webContents.send("update:download-progress", progress);
+      });
+
+      quittingForUpdate = true;
+      killPythonProcess();
+      runInstallerAndQuit(installerPath);
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to download and install the update.",
+      };
+    }
+  });
+}
 
 function appendLog(message: string): void {
   try {
@@ -184,6 +220,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(async () => {
+    registerUpdateHandlers();
     try {
       await createWindow();
     } catch (err) {
@@ -199,14 +236,18 @@ if (!gotLock) {
   });
 
   app.on("window-all-closed", () => {
-    killPythonProcess();
+    if (!quittingForUpdate) {
+      killPythonProcess();
+    }
     if (process.platform !== "darwin") {
       app.quit();
     }
   });
 
   app.on("before-quit", () => {
-    killPythonProcess();
+    if (!quittingForUpdate) {
+      killPythonProcess();
+    }
   });
 
   app.on("activate", () => {

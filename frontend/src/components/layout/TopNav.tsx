@@ -1,5 +1,6 @@
-import { Bell, HelpCircle, Search, Sparkles, User } from "lucide-react";
+import { Bell, Search, Sparkles, User } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { HelpMenu } from "./HelpMenu";
 import { OrgBreadcrumb } from "./OrgBreadcrumb";
 
 const tabs = [
@@ -65,13 +66,7 @@ export function TopNav() {
           >
             <Sparkles className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            className="rounded p-2 text-gray-400 hover:bg-vault-surface hover:text-white"
-            title="Help"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </button>
+          <HelpMenu />
           <div className="ml-2 flex items-center gap-2 border-l border-vault-border pl-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-vault-surface text-xs text-gray-300">
               <User className="h-4 w-4" />

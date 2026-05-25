@@ -70,7 +70,13 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "MenschDocs-${version}-Setup.${ext}"
+      "artifactName": "MenschDocs-${version}-Setup.${ext}",
+      "runAfterFinish": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ZeekesTechnology",
+      "repo": "Documentation_App"
     }
   }
 }
