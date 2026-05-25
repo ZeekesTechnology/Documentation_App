@@ -15,6 +15,7 @@ ASSET_TYPES = (
     "documents",
     "domain_tracker",
     "locations",
+    "licenses",
     "passwords",
     "ssl_tracker",
     "wireless",

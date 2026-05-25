@@ -21,6 +21,7 @@ const ASSET_LABELS: Record<string, string> = {
   documents: "Documents",
   domain_tracker: "Domain Tracker",
   locations: "Locations",
+  licenses: "Licensing",
   passwords: "Passwords",
   ssl_tracker: "SSL Tracker",
   wireless: "Wireless",

@@ -6,6 +6,7 @@ import { ConfigurationsPage } from "./pages/ConfigurationsPage";
 import { ContactsPage } from "./pages/ContactsPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { DomainTrackerPage } from "./pages/DomainTrackerPage";
+import { LicensesPage } from "./pages/LicensesPage";
 import { LocationsPage } from "./pages/LocationsPage";
 import { EditPasswordPage } from "./pages/EditPasswordPage";
 import { PasswordDetailPage } from "./pages/PasswordDetailPage";
@@ -54,6 +55,7 @@ export default function App() {
             element={<DomainTrackerPage />}
           />
           <Route path="organizations/:id/locations" element={<LocationsPage />} />
+          <Route path="organizations/:id/licenses" element={<LicensesPage />} />
           <Route
             path="organizations/:id/passwords/items/:itemId/edit"
             element={<EditPasswordPage />}

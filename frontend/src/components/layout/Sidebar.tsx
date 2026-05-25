@@ -30,6 +30,7 @@ const coreItems: {
   { icon: FileText, label: "Documents", asset: "documents" },
   { icon: Globe, label: "Domain Tracker", asset: "domain_tracker" },
   { icon: MapPin, label: "Locations", asset: "locations" },
+  { icon: Key, label: "Licensing", asset: "licenses" },
   { icon: Key, label: "Passwords", asset: "passwords" },
   { icon: BookOpen, label: "SSL Tracker", asset: "ssl_tracker" },
   { icon: Signal, label: "Wireless", asset: "wireless" },
