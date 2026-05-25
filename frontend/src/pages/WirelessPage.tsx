@@ -7,9 +7,19 @@ import {
   Plus,
 } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { organizationWirelessNewPath } from "../lib/organizationPaths";
 
-type SortField = "name" | "ssid" | "location" | "vendor" | "model";
+type SortField =
+  | "description"
+  | "physicalLocation"
+  | "ssid"
+  | "encryptionType"
+  | "preSharedKey"
+  | "accessPoints"
+  | "wirelessControllers"
+  | "managementIp"
+  | "old";
 type SortOrder = "asc" | "desc";
 
 function SortableTh({
@@ -17,19 +27,24 @@ function SortableTh({
   field,
   sort,
   onSort,
+  className,
 }: {
   label: string;
   field: SortField;
   sort: SortField;
   onSort: (field: SortField) => void;
+  className?: string;
 }) {
   const active = sort === field;
   return (
-    <th className="sortable-th" onClick={() => onSort(field)}>
+    <th
+      className={`sortable-th whitespace-nowrap ${className ?? ""}`}
+      onClick={() => onSort(field)}
+    >
       <span className="inline-flex items-center gap-1">
         {label}
         <ChevronsUpDown
-          className={`h-3.5 w-3.5 ${active ? "text-vault-green" : ""}`}
+          className={`h-3.5 w-3.5 shrink-0 ${active ? "text-vault-green" : ""}`}
         />
       </span>
     </th>
@@ -39,10 +54,13 @@ function SortableTh({
 export function WirelessPage() {
   const { id: orgId } = useParams<{ id: string }>();
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SortField>("name");
+  const [includeArchived, setIncludeArchived] = useState(false);
+  const [sort, setSort] = useState<SortField>("description");
   const [order, setOrder] = useState<SortOrder>("asc");
 
-  const countLabel = "0 of 0";
+  const totalCount = 0;
+  const visibleCount = 0;
+  const countLabel = `${visibleCount} of ${totalCount}`;
 
   const handleSort = (field: SortField) => {
     if (sort === field) {
@@ -64,10 +82,15 @@ export function WirelessPage() {
             Export
             <ChevronDown className="h-4 w-4" />
           </button>
-          <button type="button" className="btn-primary">
-            <Plus className="h-4 w-4" />
-            New
-          </button>
+          {orgId && (
+            <Link
+              to={organizationWirelessNewPath(orgId)}
+              className="btn-primary"
+            >
+              <Plus className="h-4 w-4" />
+              New
+            </Link>
+          )}
         </div>
       </div>
 
@@ -80,6 +103,15 @@ export function WirelessPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="min-w-[200px] flex-1 rounded border border-vault-border bg-vault-bg px-3 py-1.5 text-sm text-gray-200 placeholder:text-gray-500 focus:border-vault-green focus:outline-none"
           />
+          <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm text-gray-400">
+            <input
+              type="checkbox"
+              checked={includeArchived}
+              onChange={(e) => setIncludeArchived(e.target.checked)}
+              className="rounded border-vault-border bg-vault-bg"
+            />
+            Include archived
+          </label>
           <span className="shrink-0 text-sm text-gray-500">{countLabel}</span>
           <button
             type="button"
@@ -91,7 +123,7 @@ export function WirelessPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[880px] text-sm">
+          <table className="w-full min-w-[1500px] text-sm">
             <thead className="border-b border-vault-border bg-vault-bg/50">
               <tr>
                 <th className="w-10 px-2 py-2">
@@ -105,8 +137,15 @@ export function WirelessPage() {
                   </span>
                 </th>
                 <SortableTh
-                  label="Name"
-                  field="name"
+                  label="Wireless Network Descrip..."
+                  field="description"
+                  sort={sort}
+                  onSort={handleSort}
+                  className="max-w-[180px]"
+                />
+                <SortableTh
+                  label="Physical Location"
+                  field="physicalLocation"
                   sort={sort}
                   onSort={handleSort}
                 />
@@ -117,23 +156,36 @@ export function WirelessPage() {
                   onSort={handleSort}
                 />
                 <SortableTh
-                  label="Location"
-                  field="location"
+                  label="Encryption Type"
+                  field="encryptionType"
                   sort={sort}
                   onSort={handleSort}
                 />
                 <SortableTh
-                  label="Vendor"
-                  field="vendor"
+                  label="Pre-Shared Key"
+                  field="preSharedKey"
                   sort={sort}
                   onSort={handleSort}
                 />
                 <SortableTh
-                  label="Model"
-                  field="model"
+                  label="Access Point(S)"
+                  field="accessPoints"
                   sort={sort}
                   onSort={handleSort}
                 />
+                <SortableTh
+                  label="Wireless Controller(S)"
+                  field="wirelessControllers"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortableTh
+                  label="Management IP Address"
+                  field="managementIp"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortableTh label="OLD" field="old" sort={sort} onSort={handleSort} />
                 <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-400">
                   Actions
                 </th>
@@ -141,7 +193,7 @@ export function WirelessPage() {
             </thead>
             <tbody>
               <tr>
-                <td colSpan={7} className="px-3 py-16">
+                <td colSpan={11} className="px-3 py-16">
                   <div className="flex flex-col items-center justify-center text-center">
                     <Inbox
                       className="mb-3 h-12 w-12 text-gray-600"

@@ -1,6 +1,6 @@
 {
   "name": "documentation-app",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "MenschDocs - Electron desktop with local Flask backend",
   "main": "electron/dist/main.js",
   "author": "MenschDocs",

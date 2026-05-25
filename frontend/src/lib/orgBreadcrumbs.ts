@@ -161,6 +161,12 @@ export function buildOrgBreadcrumbs(
     return crumbs;
   }
 
+  if (rest === "wireless/new") {
+    crumbs.push(assetCrumb(orgId, "wireless"));
+    crumbs.push({ label: "New Wireless" });
+    return crumbs;
+  }
+
   const asset = rest.split("/")[0];
   if (asset in ASSET_LABELS) {
     crumbs.push({ label: ASSET_LABELS[asset] });

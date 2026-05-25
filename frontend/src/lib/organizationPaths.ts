@@ -7,6 +7,10 @@ export function organizationAssetPath(orgId: string, asset: string) {
   return `/organizations/${orgId}/${asset}`;
 }
 
+export function organizationWirelessNewPath(orgId: string) {
+  return `/organizations/${orgId}/wireless/new`;
+}
+
 export function isOrganizationHomePath(pathname: string, orgId: string) {
   return pathname === organizationHomePath(orgId);
 }
