@@ -23,6 +23,10 @@
     @apply inline-flex items-center gap-1.5 rounded border border-vault-border bg-vault-surface px-3 py-1.5 text-sm text-gray-200 hover:bg-vault-panel;
   }
 
+  .btn-import-export {
+    @apply inline-flex items-center gap-1.5 rounded border border-vault-border bg-white px-3 py-1.5 text-sm font-medium text-vault-green hover:bg-gray-100;
+  }
+
   .nav-tab {
     @apply border-b-2 border-transparent px-3 py-3 text-sm text-gray-400 hover:text-white;
   }

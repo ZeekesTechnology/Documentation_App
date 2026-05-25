@@ -85,7 +85,7 @@ export function ChecklistsPage() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 pt-1">
-          <button type="button" className="btn-secondary">
+          <button type="button" className="btn-import-export">
             <Plus className="h-4 w-4" />
             Import
           </button>

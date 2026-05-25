@@ -67,7 +67,7 @@ export function LocationsPage() {
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded bg-[#4eb0c0] px-3 py-1.5 text-sm font-medium text-black hover:bg-[#45a0ae]"
+            className="btn-import-export"
           >
             <Download className="h-4 w-4" />
             Export
