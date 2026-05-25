@@ -1,0 +1,34 @@
+appId: com.documentation.app
+productName: MenschDocs
+directories:
+  output: release
+  buildResources: build
+files:
+  - electron/dist/**/*
+  - package.json
+extraResources:
+  - from: build/python
+    to: python
+    filter:
+      - "**/*"
+  - from: build/icon.ico
+    to: icon.ico
+  - from: build/icon.png
+    to: icon.png
+win:
+  target:
+    - nsis
+  icon: icon.ico
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: MenschDocs-${version}-Setup.${ext}
+  runAfterFinish: true
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico
+  deleteAppDataOnUninstall: false
+publish:
+  provider: github
+  owner: ZeekesTechnology
+  repo: Documentation_App

@@ -1,7 +1,7 @@
 {
   "name": "documentation-app",
-  "version": "1.0.0",
-  "description": "MenschDocs — Electron desktop with local Flask backend",
+  "version": "1.0.4",
+  "description": "MenschDocs - Electron desktop with local Flask backend",
   "main": "electron/dist/main.js",
   "author": "MenschDocs",
   "license": "MIT",
@@ -11,12 +11,13 @@
     "dev:electron": "node scripts/wait-for-port.mjs && cross-env NODE_ENV=development electron .",
     "dev": "npm run build:electron-ts && concurrently -k -n backend,frontend,electron -c blue,green,magenta \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:electron\"",
     "dev:web": "concurrently -k -n backend,frontend -c blue,green \"cross-env DOCAPP_PORT=5000 npm run dev:backend\" \"npm run dev:frontend\"",
-    "build:frontend": "vite build --config frontend/vite.config.ts && node scripts/copy-static.mjs",
+    "build:frontend": "vite build --config frontend/vite.config.ts && node scripts/copy-static.mjs && node scripts/write-build-info.mjs",
     "build:electron-ts": "tsc -p electron/tsconfig.json",
     "build:icons": "node scripts/generate-app-icon.mjs",
     "build:python": "node scripts/build-python.mjs",
     "build": "npm run build:frontend && npm run build:electron-ts && npm run build:icons",
-    "dist": "npm run build && npm run build:python && electron-builder --win"
+    "dist": "node scripts/clean-dist.mjs && npm run build && npm run build:python && node scripts/verify-build.mjs && electron-builder --win --config electron-builder.yml && node scripts/verify-packaged.mjs",
+    "verify:update": "node scripts/verify-update-path.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
@@ -39,44 +40,5 @@
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
     "wait-on": "^8.0.1"
-  },
-  "build": {
-    "appId": "com.documentation.app",
-    "productName": "MenschDocs",
-    "directories": {
-      "output": "release",
-      "buildResources": "build"
-    },
-    "files": [
-      "electron/dist/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "build/python",
-        "to": "python",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "build/icon.ico",
-      "signAndEditExecutable": false
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "artifactName": "MenschDocs-${version}-Setup.${ext}",
-      "runAfterFinish": true
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "ZeekesTechnology",
-      "repo": "Documentation_App"
-    }
   }
 }

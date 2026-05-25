@@ -59,6 +59,67 @@ function registerUpdateHandlers(): void {
   });
 }
 
+function fileExists(filePath: string): boolean {
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getWindowIcon(): string | undefined {
+  if (process.platform !== "win32") {
+    return undefined;
+  }
+
+  const candidates = app.isPackaged
+    ? [path.join(process.resourcesPath, "icon.ico")]
+    : [path.resolve(__dirname, "..", "..", "build", "icon.ico")];
+
+  return candidates.find((candidate) => fileExists(candidate));
+}
+
+async function logBuildInfo(port: number): Promise<void> {
+  return new Promise((resolve) => {
+    const req = http.get(
+      {
+        hostname: "127.0.0.1",
+        port,
+        path: "/api/build-info",
+        timeout: 2000,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          try {
+            const info = JSON.parse(Buffer.concat(chunks).toString("utf8")) as {
+              version?: string;
+              bundle?: string;
+            };
+            appendLog(
+              `UI build ${info.version ?? "unknown"} (${info.bundle ?? "unknown bundle"})`
+            );
+          } catch {
+            appendLog("UI build info unavailable");
+          }
+          resolve();
+        });
+      }
+    );
+
+    req.on("error", () => {
+      appendLog("UI build info request failed");
+      resolve();
+    });
+    req.on("timeout", () => {
+      req.destroy();
+      resolve();
+    });
+  });
+}
+
 function appendLog(message: string): void {
   try {
     const logDir = getLogDir();
@@ -182,6 +243,8 @@ async function createWindow(): Promise<void> {
   }
 
   const url = getRendererUrl(port);
+  const appVersion = getCurrentVersion();
+  const iconPath = getWindowIcon();
 
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -189,11 +252,14 @@ async function createWindow(): Promise<void> {
     minWidth: 800,
     minHeight: 500,
     title: "MenschDocs",
+    show: false,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      partition: `persist:menschdocs-v${appVersion}`,
     },
   });
 
@@ -202,7 +268,15 @@ async function createWindow(): Promise<void> {
     return { action: "deny" };
   });
 
+  const session = mainWindow.webContents.session;
+  await session.clearCache();
+  await session.clearStorageData({
+    storages: ["serviceworkers", "cachestorage"],
+  });
+
   await mainWindow.loadURL(url);
+  mainWindow.show();
+  await logBuildInfo(port);
   mainWindow.on("closed", () => {
     mainWindow = null;
   });

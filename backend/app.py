@@ -11,6 +11,20 @@ from org_storage import bp as org_storage_bp
 from seed import seed
 
 
+def _load_build_info(static_dir: str | None) -> dict:
+    if not static_dir:
+        return {}
+    info_path = Path(static_dir) / "build-info.json"
+    if not info_path.is_file():
+        return {}
+    try:
+        import json
+
+        return json.loads(info_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
 def create_app() -> Flask:
     data_dir = ensure_data_dirs()
     seed()
@@ -22,9 +36,18 @@ def create_app() -> Flask:
     app.register_blueprint(dashboard_bp)
 
     static_dir = os.environ.get("DOCAPP_STATIC_DIR")
+    build_info = _load_build_info(static_dir)
     if static_dir and Path(static_dir).is_dir():
         app.static_folder = static_dir
         app.static_url_path = ""
+
+    @app.after_request
+    def disable_static_cache(response):
+        if static_dir and response.status_code == 200:
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
 
     @app.get("/api/health")
     def health():
@@ -33,8 +56,13 @@ def create_app() -> Flask:
                 "ok": True,
                 "service": "menschdocs",
                 "dataDir": str(resolve_data_dir()),
+                "build": build_info,
             }
         )
+
+    @app.get("/api/build-info")
+    def build_info_route():
+        return jsonify(build_info or {"error": "Build info unavailable"})
 
     @app.get("/api/config")
     def config():
