@@ -71,7 +71,7 @@ export function TopNav() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-vault-surface text-xs text-gray-300">
               <User className="h-4 w-4" />
             </div>
-            <span className="text-sm text-gray-300">Technician</span>
+            <span className="text-sm text-gray-300">Administrator</span>
           </div>
         </div>
       </div>
