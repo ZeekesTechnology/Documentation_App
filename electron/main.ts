@@ -8,7 +8,7 @@ import { ChildProcess, spawn } from "child_process";
 import fs from "fs";
 import http from "http";
 import path from "path";
-import getPort from "get-port";
+import { findAvailablePort } from "./findPort";
 import {
   getLogDir,
   getPythonLaunchConfig,
@@ -95,7 +95,7 @@ function waitForHealth(port: number): Promise<void> {
 }
 
 async function startPythonBackend(): Promise<number> {
-  backendPort = await getPort({ port: [5000, 5001, 5002, 8765] });
+  backendPort = await findAvailablePort([5000, 5001, 5002, 8765]);
   const config = getPythonLaunchConfig(backendPort);
 
   appendLog(

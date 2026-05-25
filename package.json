@@ -13,12 +13,12 @@
     "dev:web": "concurrently -k -n backend,frontend -c blue,green \"cross-env DOCAPP_PORT=5000 npm run dev:backend\" \"npm run dev:frontend\"",
     "build:frontend": "vite build --config frontend/vite.config.ts && node scripts/copy-static.mjs",
     "build:electron-ts": "tsc -p electron/tsconfig.json",
+    "build:icons": "node scripts/generate-app-icon.mjs",
     "build:python": "node scripts/build-python.mjs",
-    "build": "npm run build:frontend && npm run build:electron-ts",
+    "build": "npm run build:frontend && npm run build:electron-ts && npm run build:icons",
     "dist": "npm run build && npm run build:python && electron-builder --win"
   },
   "dependencies": {
-    "get-port": "^7.1.0",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -64,12 +64,13 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.png",
+      "icon": "build/icon.ico",
       "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "MenschDocs-${version}-Setup.${ext}"
     }
   }
 }

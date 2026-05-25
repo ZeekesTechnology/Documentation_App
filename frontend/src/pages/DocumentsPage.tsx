@@ -17,6 +17,7 @@ import {
   addItem,
   countDocumentsInFolder,
   deleteItem,
+  ensureDocumentStorageLoaded,
   getFolder,
   listItems,
   organizationDocumentFolderPath,
@@ -100,7 +101,9 @@ export function DocumentsPage() {
       setItems([]);
       return;
     }
-    setItems(refreshItems(orgId, parentId));
+    void ensureDocumentStorageLoaded(orgId).then(() => {
+      setItems(refreshItems(orgId, parentId));
+    });
   }, [orgId, parentId]);
 
   useEffect(() => {

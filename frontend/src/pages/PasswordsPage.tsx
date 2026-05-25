@@ -17,6 +17,7 @@ import {
   addItem,
   countPasswordsInFolder,
   deleteItem,
+  ensurePasswordStorageLoaded,
   getFolder,
   listItems,
   organizationPasswordFolderPath,
@@ -106,7 +107,9 @@ export function PasswordsPage() {
       setItems([]);
       return;
     }
-    setItems(refreshItems(orgId, parentId, scope));
+    void ensurePasswordStorageLoaded(orgId).then(() => {
+      setItems(refreshItems(orgId, parentId, scope));
+    });
   }, [orgId, parentId, scope]);
 
   useEffect(() => {

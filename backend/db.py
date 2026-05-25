@@ -38,6 +38,15 @@ CREATE TABLE IF NOT EXISTS organization_assets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_assets_org_type ON organization_assets(org_id, asset_type);
+
+CREATE TABLE IF NOT EXISTS org_local_storage (
+    org_id TEXT NOT NULL,
+    storage_key TEXT NOT NULL,
+    payload TEXT NOT NULL DEFAULT '[]',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (org_id, storage_key),
+    FOREIGN KEY (org_id) REFERENCES organizations(id) ON DELETE CASCADE
+);
 """
 
 EXTRA_COLUMNS = [

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { fetchOrganization } from "../../lib/api";
+import { ensureDocumentStorageLoaded } from "../../lib/documentFolders";
 import {
   buildOrgBreadcrumbs,
   isOrgBreadcrumbPath,
   type BreadcrumbCrumb,
 } from "../../lib/orgBreadcrumbs";
+import { ensurePasswordStorageLoaded } from "../../lib/passwordItems";
 
 export function OrgBreadcrumb() {
   const { pathname } = useLocation();
@@ -26,8 +28,18 @@ export function OrgBreadcrumb() {
     let cancelled = false;
 
     const load = () => {
-      fetchOrganization(orgId)
-        .then((org) => {
+      const storageLoads = [
+        fetchOrganization(orgId),
+        pathname.includes("/passwords")
+          ? ensurePasswordStorageLoaded(orgId)
+          : Promise.resolve(),
+        pathname.includes("/documents")
+          ? ensureDocumentStorageLoaded(orgId)
+          : Promise.resolve(),
+      ];
+
+      Promise.all(storageLoads)
+        .then(([org]) => {
           if (!cancelled) {
             setCrumbs(buildOrgBreadcrumbs(pathname, org.name));
           }

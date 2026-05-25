@@ -19,6 +19,7 @@ import { useRelativeTime } from "../lib/relativeTime";
 import { PasswordStrengthBadge } from "../components/PasswordStrengthBadge";
 import {
   deleteItem,
+  ensurePasswordStorageLoaded,
   getItem,
   organizationPasswordItemEditPath,
   passwordListPath,
@@ -119,6 +120,10 @@ export function PasswordDetailPage() {
         setStorageRevision((revision) => revision + 1);
       }
     };
+
+    void ensurePasswordStorageLoaded(orgId).then(() => {
+      setStorageRevision((revision) => revision + 1);
+    });
 
     window.addEventListener(
       "menschdocs-asset-storage-changed",

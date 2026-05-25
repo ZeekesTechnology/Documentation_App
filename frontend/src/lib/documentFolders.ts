@@ -1,3 +1,10 @@
+import {
+  ensureOrgStorageLoaded,
+  getOrgStorageJson,
+  ORG_STORAGE_KEYS,
+  setOrgStorageJson,
+} from "./orgStorage";
+
 export type DocumentItemKind = "folder" | "document";
 
 export interface DocumentItem {
@@ -5,10 +12,6 @@ export interface DocumentItem {
   name: string;
   parentId: string | null;
   kind: DocumentItemKind;
-}
-
-function storageKey(orgId: string) {
-  return `menschdocs-folders-${orgId}`;
 }
 
 function normalizeItem(raw: Partial<DocumentItem>): DocumentItem | null {
@@ -23,7 +26,7 @@ function normalizeItem(raw: Partial<DocumentItem>): DocumentItem | null {
 
 function readAll(orgId: string): DocumentItem[] {
   try {
-    const raw = sessionStorage.getItem(storageKey(orgId));
+    const raw = getOrgStorageJson(orgId, ORG_STORAGE_KEYS.documents);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Partial<DocumentItem>[];
     if (!Array.isArray(parsed)) return [];
@@ -36,10 +39,18 @@ function readAll(orgId: string): DocumentItem[] {
 }
 
 function writeAll(orgId: string, items: DocumentItem[]) {
-  sessionStorage.setItem(storageKey(orgId), JSON.stringify(items));
+  setOrgStorageJson(
+    orgId,
+    ORG_STORAGE_KEYS.documents,
+    JSON.stringify(items)
+  );
   window.dispatchEvent(
     new CustomEvent("menschdocs-asset-storage-changed", { detail: { orgId } })
   );
+}
+
+export function ensureDocumentStorageLoaded(orgId: string) {
+  return ensureOrgStorageLoaded(orgId, ORG_STORAGE_KEYS.documents);
 }
 
 export function listItems(

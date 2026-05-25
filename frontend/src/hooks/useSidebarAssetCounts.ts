@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useOrgAssetCounts } from "../contexts/OrgAssetCountsContext";
-import { countAllDocumentItems } from "../lib/documentFolders";
-import { countAllPasswordEntries } from "../lib/passwordItems";
+import { countAllDocumentItems, ensureDocumentStorageLoaded } from "../lib/documentFolders";
+import { countAllPasswordEntries, ensurePasswordStorageLoaded } from "../lib/passwordItems";
 import { EMPTY_ASSET_COUNTS, type AssetCounts, type AssetType } from "../types/assets";
 
 export function useSidebarAssetCounts(orgId: string | null): AssetCounts {
@@ -12,6 +12,13 @@ export function useSidebarAssetCounts(orgId: string | null): AssetCounts {
 
   useEffect(() => {
     if (!orgId) return;
+
+    void Promise.all([
+      ensurePasswordStorageLoaded(orgId),
+      ensureDocumentStorageLoaded(orgId),
+    ]).then(() => {
+      setStorageRevision((revision) => revision + 1);
+    });
 
     const handleStorageChange = (event: Event) => {
       const detail = (event as CustomEvent<{ orgId: string }>).detail;

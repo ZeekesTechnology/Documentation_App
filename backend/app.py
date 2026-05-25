@@ -7,6 +7,7 @@ from dashboard import bp as dashboard_bp
 from assets import bp as assets_bp
 from data_paths import ensure_data_dirs, resolve_data_dir
 from organizations import bp as organizations_bp
+from org_storage import bp as org_storage_bp
 from seed import seed
 
 
@@ -16,6 +17,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config["DATA_DIR"] = str(data_dir)
     app.register_blueprint(organizations_bp)
+    app.register_blueprint(org_storage_bp)
     app.register_blueprint(assets_bp)
     app.register_blueprint(dashboard_bp)
 

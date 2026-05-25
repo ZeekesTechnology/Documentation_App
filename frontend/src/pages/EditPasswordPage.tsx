@@ -2,6 +2,7 @@ import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
+  ensurePasswordStorageLoaded,
   getItem,
   organizationPasswordItemPath,
   updatePasswordItem,
@@ -39,20 +40,22 @@ export function EditPasswordPage() {
       return;
     }
 
-    const item = getItem(orgId, itemId);
-    if (!item || item.kind !== "password") {
-      setLoading(false);
-      return;
-    }
+    void ensurePasswordStorageLoaded(orgId).then(() => {
+      const item = getItem(orgId, itemId);
+      if (!item || item.kind !== "password") {
+        setLoading(false);
+        return;
+      }
 
-    setName(item.name);
-    setCategory(item.category ?? "");
-    setUsername(item.username ?? "");
-    setPasswordSharing(Boolean(item.passwordSharing));
-    setOtpSecret(item.otpSecret ?? "");
-    setUrl(item.url ?? "");
-    setNotes(item.notes ?? "");
-    setLoading(false);
+      setName(item.name);
+      setCategory(item.category ?? "");
+      setUsername(item.username ?? "");
+      setPasswordSharing(Boolean(item.passwordSharing));
+      setOtpSecret(item.otpSecret ?? "");
+      setUrl(item.url ?? "");
+      setNotes(item.notes ?? "");
+      setLoading(false);
+    });
   }, [orgId, itemId]);
 
   const detailPath =

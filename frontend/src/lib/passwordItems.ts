@@ -1,3 +1,10 @@
+import {
+  ensureOrgStorageLoaded,
+  getOrgStorageJson,
+  ORG_STORAGE_KEYS,
+  setOrgStorageJson,
+} from "./orgStorage";
+
 export type PasswordItemKind = "folder" | "password";
 export type PasswordScope = "shared" | "personal";
 
@@ -15,10 +22,6 @@ export interface PasswordItem {
   category?: string;
   passwordSharing?: boolean;
   otpSecret?: string;
-}
-
-function storageKey(orgId: string) {
-  return `menschdocs-passwords-${orgId}`;
 }
 
 function normalizeItem(raw: Partial<PasswordItem>): PasswordItem | null {
@@ -42,7 +45,7 @@ function normalizeItem(raw: Partial<PasswordItem>): PasswordItem | null {
 
 function readAll(orgId: string): PasswordItem[] {
   try {
-    const raw = sessionStorage.getItem(storageKey(orgId));
+    const raw = getOrgStorageJson(orgId, ORG_STORAGE_KEYS.passwords);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Partial<PasswordItem>[];
     if (!Array.isArray(parsed)) return [];
@@ -55,10 +58,18 @@ function readAll(orgId: string): PasswordItem[] {
 }
 
 function writeAll(orgId: string, items: PasswordItem[]) {
-  sessionStorage.setItem(storageKey(orgId), JSON.stringify(items));
+  setOrgStorageJson(
+    orgId,
+    ORG_STORAGE_KEYS.passwords,
+    JSON.stringify(items)
+  );
   window.dispatchEvent(
     new CustomEvent("menschdocs-asset-storage-changed", { detail: { orgId } })
   );
+}
+
+export function ensurePasswordStorageLoaded(orgId: string) {
+  return ensureOrgStorageLoaded(orgId, ORG_STORAGE_KEYS.passwords);
 }
 
 export function listItems(
