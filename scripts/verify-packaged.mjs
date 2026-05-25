@@ -4,14 +4,17 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
+const packagedRoot = path.resolve(
+  projectRoot,
+  process.env.PACKAGED_ROOT ?? "release"
+);
 
 const packageJson = JSON.parse(
   fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")
 );
 
 const staticJsDir = path.join(
-  projectRoot,
-  "release",
+  packagedRoot,
   "win-unpacked",
   "resources",
   "python",
@@ -20,8 +23,7 @@ const staticJsDir = path.join(
   "assets"
 );
 const preloadAsarPath = path.join(
-  projectRoot,
-  "release",
+  packagedRoot,
   "win-unpacked",
   "resources",
   "app.asar"

@@ -14,12 +14,41 @@ const pathsToRemove = [
   "release/win-unpacked",
 ];
 
-for (const relativePath of pathsToRemove) {
-  const target = path.join(projectRoot, relativePath);
-  if (fs.existsSync(target)) {
-    fs.rmSync(target, { recursive: true, force: true });
-    console.log(`Removed ${relativePath}`);
+function removePath(target, relativePath) {
+  if (!fs.existsSync(target)) {
+    return;
   }
+
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+      fs.rmSync(target, {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+        retryDelay: 200,
+      });
+      console.log(`Removed ${relativePath}`);
+      return;
+    } catch (error) {
+      const isBusy =
+        error instanceof Error &&
+        "code" in error &&
+        (error.code === "EBUSY" || error.code === "EPERM");
+
+      if (!isBusy || attempt === 5) {
+        console.warn(
+          `Could not remove ${relativePath}: ${error instanceof Error ? error.message : error}`
+        );
+        return;
+      }
+
+      console.warn(`Retrying removal of ${relativePath} (${attempt}/5)...`);
+    }
+  }
+}
+
+for (const relativePath of pathsToRemove) {
+  removePath(path.join(projectRoot, relativePath), relativePath);
 }
 
 console.log("Clean complete.");
