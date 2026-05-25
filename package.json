@@ -1,6 +1,6 @@
 {
   "name": "documentation-app",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "MenschDocs - Electron desktop with local Flask backend",
   "main": "electron/dist/main.js",
   "author": "MenschDocs",
@@ -16,7 +16,7 @@
     "build:icons": "node scripts/generate-app-icon.mjs",
     "build:python": "node scripts/build-python.mjs",
     "build": "npm run build:frontend && npm run build:electron-ts && npm run build:icons",
-    "dist": "node scripts/clean-dist.mjs && npm run build && npm run build:python && node scripts/verify-build.mjs && electron-builder --win --config electron-builder.yml && node scripts/verify-packaged.mjs",
+    "dist": "node scripts/clean-dist.mjs && npm run build && npm run build:python && node scripts/verify-build.mjs && electron-builder --win --config electron-builder.yml --dir && node scripts/embed-win-icon.mjs && electron-builder --win --config electron-builder.yml --prepackaged release/win-unpacked && node scripts/verify-packaged.mjs",
     "verify:update": "node scripts/verify-update-path.mjs"
   },
   "dependencies": {
@@ -31,12 +31,13 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
+    "postcss": "^8.4.49",
+    "rcedit": "^4.0.1",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
     "wait-on": "^8.0.1"

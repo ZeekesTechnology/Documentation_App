@@ -69,6 +69,24 @@ try {
     throw new Error("Electron updater module was not built correctly.");
   }
 
+  const builderConfig = fs.readFileSync(
+    path.join(projectRoot, "electron-builder.yml"),
+    "utf8"
+  );
+  if (
+    /signAndEditExecutable:\s*false/i.test(builderConfig) &&
+    !fs.existsSync(path.join(projectRoot, "scripts", "embed-win-icon.mjs"))
+  ) {
+    throw new Error(
+      "signAndEditExecutable is disabled but scripts/embed-win-icon.mjs is missing."
+    );
+  }
+
+  verifyFile(
+    path.join(projectRoot, "scripts", "embed-win-icon.mjs"),
+    "Windows icon embed script"
+  );
+
   const bundle = readStaticBundle();
   for (const text of requiredUiStrings) {
     if (!bundle.includes(text)) {

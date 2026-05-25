@@ -15,10 +15,16 @@ def main() -> None:
 
     BUILD.mkdir(exist_ok=True)
     logo = Image.open(SRC).convert("RGBA")
-    icon_base = logo.resize((256, 256), Image.Resampling.LANCZOS)
+    icon_256 = logo.resize((256, 256), Image.Resampling.LANCZOS)
 
-    icon_base.save(BUILD / "icon.png")
-    icon_base.save(BUILD / "icon.ico", format="ICO", sizes=ICO_SIZES)
+    icon_256.save(BUILD / "icon.png")
+    icon_256.save(BUILD / "icon.ico", format="ICO", sizes=ICO_SIZES)
+
+    with Image.open(BUILD / "icon.ico") as icon:
+        if icon.size != (256, 256):
+            raise SystemExit(
+                f"Generated icon.ico primary size is {icon.size}, expected (256, 256)."
+            )
 
     print(f"Generated {BUILD / 'icon.ico'}")
     print(f"Generated {BUILD / 'icon.png'}")
