@@ -24,7 +24,7 @@
   }
 
   .btn-import-export {
-    @apply inline-flex items-center gap-1.5 rounded border border-vault-border bg-white px-3 py-1.5 text-sm font-medium text-vault-green hover:bg-gray-100;
+    @apply inline-flex items-center gap-1.5 rounded border border-vault-border bg-vault-surface px-3 py-1.5 text-sm font-medium text-vault-green hover:bg-vault-panel;
   }
 
   .nav-tab {
