@@ -53,6 +53,7 @@ def asset_counts_for_index(index: int) -> dict[str, int]:
             "locations": 0,
             "passwords": 0,
             "ssl_tracker": 0,
+            "wireless": 0,
         }
     n = index + 1
     return {
@@ -64,6 +65,7 @@ def asset_counts_for_index(index: int) -> dict[str, int]:
         "locations": 0,
         "passwords": 0,
         "ssl_tracker": 0,
+        "wireless": 0 if n % 3 == 0 else 1,
     }
 
 

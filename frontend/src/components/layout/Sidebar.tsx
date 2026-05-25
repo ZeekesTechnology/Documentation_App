@@ -7,6 +7,7 @@ import {
   Key,
   MapPin,
   Server,
+  Signal,
   Users,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -31,6 +32,7 @@ const coreItems: {
   { icon: MapPin, label: "Locations", asset: "locations" },
   { icon: Key, label: "Passwords", asset: "passwords" },
   { icon: BookOpen, label: "SSL Tracker", asset: "ssl_tracker" },
+  { icon: Signal, label: "Wireless", asset: "wireless" },
 ];
 
 export function Sidebar() {

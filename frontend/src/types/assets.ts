@@ -7,6 +7,7 @@ export const ASSET_TYPES = [
   "locations",
   "passwords",
   "ssl_tracker",
+  "wireless",
 ] as const;
 
 export type AssetType = (typeof ASSET_TYPES)[number];
@@ -22,6 +23,7 @@ export const EMPTY_ASSET_COUNTS: AssetCounts = {
   locations: 0,
   passwords: 0,
   ssl_tracker: 0,
+  wireless: 0,
 };
 
 export interface OrgAsset {

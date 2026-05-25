@@ -23,6 +23,7 @@ const ASSET_LABELS: Record<string, string> = {
   locations: "Locations",
   passwords: "Passwords",
   ssl_tracker: "SSL Tracker",
+  wireless: "Wireless",
 };
 
 type FolderStore = "documents" | "passwords";

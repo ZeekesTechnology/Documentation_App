@@ -17,6 +17,7 @@ ASSET_TYPES = (
     "locations",
     "passwords",
     "ssl_tracker",
+    "wireless",
 )
 
 
