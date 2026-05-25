@@ -1,0 +1,107 @@
+Build a modern IT documentation center web app inspired by IT Glue, but with original branding, UI, and code.
+
+Tech stack:
+- Next.js 14+ with App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Prisma ORM
+- PostgreSQL
+- NextAuth/Auth.js for authentication
+- Role-based access control
+- Zod for validation
+
+App name: DocVault IT
+
+Core features:
+1. Dashboard
+   - Recent documents
+   - Expiring passwords/licenses
+   - Recently viewed clients
+   - Quick search bar
+
+2. Organizations / Clients
+   - Create, edit, delete clients
+   - Client profile page
+   - Store contacts, locations, domains, notes, assets, credentials, documents
+
+3. Documentation System
+   - Rich text documentation pages
+   - Folders/categories
+   - Tags
+   - Markdown support
+   - Attachments
+   - Version history
+   - Last updated by / last updated date
+
+4. Password Vault
+   - Store credentials per organization
+   - Fields: title, username, password, URL, notes, MFA notes
+   - Passwords encrypted at rest
+   - Reveal/copy password buttons
+   - Audit log for viewing/copying passwords
+
+5. Assets
+   - Track servers, workstations, network devices, printers, firewalls, software, licenses
+   - Custom fields per asset type
+   - Relationships between assets, documents, and credentials
+
+6. Global Search
+   - Search across organizations, documents, assets, contacts, and credentials
+   - Filter by type, tag, or organization
+
+7. Admin Settings
+   - User management
+   - Roles: Admin, Technician, Read-only
+   - Organization access controls
+   - Custom documentation templates
+   - Custom asset fields
+
+8. Audit Logs
+   - Track create, edit, delete, view password, copy password, login events
+   - Filter logs by user, organization, and event type
+
+UI requirements:
+- Clean professional SaaS dashboard
+- Left sidebar navigation
+- Top search bar
+- Tables with filtering and sorting
+- Detail pages with tabs
+- Responsive design
+- Dark mode support
+- Use original layout and styling, not a copy of any existing product
+
+Database models:
+- User
+- Role
+- Organization
+- Contact
+- Location
+- Document
+- DocumentVersion
+- Folder
+- Tag
+- Credential
+- Asset
+- AssetType
+- AssetCustomField
+- Attachment
+- AuditLog
+
+Security requirements:
+- Encrypt stored passwords using strong encryption
+- Never log plaintext passwords
+- Use secure session handling
+- Validate all input with Zod
+- Protect all routes by authentication
+- Enforce role-based permissions server-side
+
+Deliverables:
+- Generate the full project structure
+- Create Prisma schema
+- Build all main pages and components
+- Seed database with demo data
+- Include README with setup instructions
+- Make the app production-ready and easy to extend
+
+Start by creating the database schema, authentication system, layout, dashboard, and organization detail pages. Then build the documentation, credentials, assets, search, and audit log modules.

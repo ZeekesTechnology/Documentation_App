@@ -1,0 +1,75 @@
+{
+  "name": "documentation-app",
+  "version": "1.0.0",
+  "description": "MenschDocs — Electron desktop with local Flask backend",
+  "main": "electron/dist/main.js",
+  "author": "MenschDocs",
+  "license": "MIT",
+  "scripts": {
+    "dev:backend": "node scripts/run-backend-dev.mjs",
+    "dev:frontend": "vite --config frontend/vite.config.ts",
+    "dev:electron": "node scripts/wait-for-port.mjs && cross-env NODE_ENV=development electron .",
+    "dev": "npm run build:electron-ts && concurrently -k -n backend,frontend,electron -c blue,green,magenta \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:electron\"",
+    "dev:web": "concurrently -k -n backend,frontend -c blue,green \"cross-env DOCAPP_PORT=5000 npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "vite build --config frontend/vite.config.ts && node scripts/copy-static.mjs",
+    "build:electron-ts": "tsc -p electron/tsconfig.json",
+    "build:python": "node scripts/build-python.mjs",
+    "build": "npm run build:frontend && npm run build:electron-ts",
+    "dist": "npm run build && npm run build:python && electron-builder --win"
+  },
+  "dependencies": {
+    "get-port": "^7.1.0",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.documentation.app",
+    "productName": "MenschDocs",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/python",
+        "to": "python",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
