@@ -15,6 +15,7 @@ import {
   getPythonLaunchConfig,
   getRendererUrl,
 } from "./paths";
+import { setApplicationMenu } from "./menu";
 import {
   checkForUpdates,
   downloadPendingUpdate,
@@ -273,6 +274,8 @@ async function createWindow(): Promise<void> {
   await session.clearStorageData({
     storages: ["serviceworkers", "cachestorage"],
   });
+
+  setApplicationMenu(mainWindow);
 
   await mainWindow.loadURL(url);
   mainWindow.show();

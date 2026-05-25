@@ -8,6 +8,14 @@ export function HelpMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const unsubscribe = window.documentationApp?.onOpenUpdateDialog?.(() => {
+      setMenuOpen(false);
+      setUpdateOpen(true);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     if (!menuOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,13 +38,14 @@ export function HelpMenu() {
       <div className="relative" ref={menuRef}>
         <button
           type="button"
-          className="rounded p-2 text-gray-400 hover:bg-vault-surface hover:text-white"
+          className="flex items-center gap-1.5 rounded px-2 py-2 text-sm text-gray-400 hover:bg-vault-surface hover:text-white"
           title="Help"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           <HelpCircle className="h-4 w-4" />
+          <span>Help</span>
         </button>
 
         {menuOpen && (

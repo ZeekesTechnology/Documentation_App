@@ -35,4 +35,13 @@ contextBridge.exposeInMainWorld("documentationApp", {
       ipcRenderer.removeListener("update:download-progress", listener);
     };
   },
+  onOpenUpdateDialog: (callback: () => void): (() => void) => {
+    const listener = () => {
+      callback();
+    };
+    ipcRenderer.on("help:open-update", listener);
+    return () => {
+      ipcRenderer.removeListener("help:open-update", listener);
+    };
+  },
 });

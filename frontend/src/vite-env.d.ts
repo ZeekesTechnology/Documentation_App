@@ -25,6 +25,7 @@ interface DocumentationAppApi {
   onUpdateDownloadProgress: (
     callback: (progress: UpdateDownloadProgress) => void
   ) => () => void;
+  onOpenUpdateDialog: (callback: () => void) => () => void;
 }
 
 declare global {

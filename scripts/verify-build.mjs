@@ -7,6 +7,7 @@ const projectRoot = path.resolve(__dirname, "..");
 
 const staticJsDir = path.join(projectRoot, "backend", "static", "assets");
 const preloadPath = path.join(projectRoot, "electron", "dist", "preload.js");
+const menuPath = path.join(projectRoot, "electron", "dist", "menu.js");
 const updaterPath = path.join(projectRoot, "electron", "dist", "updater.js");
 const iconPath = path.join(projectRoot, "build", "icon.ico");
 const logoSource = path.join(
@@ -47,11 +48,20 @@ try {
   verifyFile(iconPath, "App icon");
   verifyFile(logoSource, "Logo source");
   verifyFile(preloadPath, "Electron preload");
+  verifyFile(menuPath, "Electron application menu");
   verifyFile(updaterPath, "Electron updater");
 
   const preloadSource = fs.readFileSync(preloadPath, "utf8");
   if (!preloadSource.includes("checkForUpdates")) {
     throw new Error("Electron preload is missing update IPC bindings.");
+  }
+  if (!preloadSource.includes("help:open-update")) {
+    throw new Error("Electron preload is missing Help menu IPC binding.");
+  }
+
+  const menuSource = fs.readFileSync(menuPath, "utf8");
+  if (!menuSource.includes("Search for Update")) {
+    throw new Error("Electron Help menu is missing Search for Update.");
   }
 
   const updaterSource = fs.readFileSync(updaterPath, "utf8");
