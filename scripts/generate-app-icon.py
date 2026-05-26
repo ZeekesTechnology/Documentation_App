@@ -3,6 +3,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from logo_bg import remove_outer_white_background
+
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "Org Logos" / "MenschDocs 48x48 Logo.png"
 BUILD = ROOT / "build"
@@ -14,7 +16,7 @@ def main() -> None:
         raise SystemExit(f"Logo not found: {SRC}")
 
     BUILD.mkdir(exist_ok=True)
-    logo = Image.open(SRC).convert("RGBA")
+    logo = remove_outer_white_background(Image.open(SRC))
     icon_256 = logo.resize((256, 256), Image.Resampling.LANCZOS)
 
     icon_256.save(BUILD / "icon.png")
