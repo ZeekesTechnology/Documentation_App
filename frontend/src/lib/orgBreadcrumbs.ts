@@ -4,6 +4,9 @@ import {
 } from "./documentFolders";
 import { organizationAssetPath, organizationHomePath } from "./organizationPaths";
 import {
+  getWirelessNetwork,
+} from "./wirelessNetworks";
+import {
   getItem as getPasswordItem,
   organizationPasswordFolderPath,
   organizationPasswordItemPath,
@@ -164,6 +167,19 @@ export function buildOrgBreadcrumbs(
   if (rest === "wireless/new") {
     crumbs.push(assetCrumb(orgId, "wireless"));
     crumbs.push({ label: "New Wireless" });
+    return crumbs;
+  }
+
+  const wirelessDetail = rest.match(/^wireless\/([^/]+)$/);
+  if (wirelessDetail && wirelessDetail[1] !== "new") {
+    const network = getWirelessNetwork(orgId, wirelessDetail[1]);
+    crumbs.push(assetCrumb(orgId, "wireless"));
+    crumbs.push({
+      label:
+        network?.description.trim() ||
+        network?.ssid.trim() ||
+        "Wireless Network",
+    });
     return crumbs;
   }
 

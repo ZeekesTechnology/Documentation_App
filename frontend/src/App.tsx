@@ -13,6 +13,7 @@ import { PasswordDetailPage } from "./pages/PasswordDetailPage";
 import { PasswordsPage } from "./pages/PasswordsPage";
 import { SslTrackerPage } from "./pages/SslTrackerPage";
 import { WirelessPage } from "./pages/WirelessPage";
+import { WirelessDetailPage } from "./pages/WirelessDetailPage";
 import { CreateOrganizationPage } from "./pages/CreateOrganizationPage";
 import { EditQuickNotesPage } from "./pages/EditQuickNotesPage";
 import { NewWirelessPage } from "./pages/NewWirelessPage";
@@ -75,6 +76,10 @@ export default function App() {
             element={<SslTrackerPage />}
           />
           <Route path="organizations/:id/wireless/new" element={<NewWirelessPage />} />
+          <Route
+            path="organizations/:id/wireless/:networkId"
+            element={<WirelessDetailPage />}
+          />
           <Route path="organizations/:id/wireless" element={<WirelessPage />} />
           <Route path="organizations/:id" element={<OrganizationDetailPage />} />
           <Route path="personal" element={<PlaceholderPage title="Personal" />} />

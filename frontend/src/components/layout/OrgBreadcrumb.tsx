@@ -8,6 +8,7 @@ import {
   type BreadcrumbCrumb,
 } from "../../lib/orgBreadcrumbs";
 import { ensurePasswordStorageLoaded } from "../../lib/passwordItems";
+import { ensureWirelessStorageLoaded } from "../../lib/wirelessNetworks";
 
 export function OrgBreadcrumb() {
   const { pathname } = useLocation();
@@ -35,6 +36,9 @@ export function OrgBreadcrumb() {
           : Promise.resolve(),
         pathname.includes("/documents")
           ? ensureDocumentStorageLoaded(orgId)
+          : Promise.resolve(),
+        pathname.includes("/wireless")
+          ? ensureWirelessStorageLoaded(orgId)
           : Promise.resolve(),
       ];
 

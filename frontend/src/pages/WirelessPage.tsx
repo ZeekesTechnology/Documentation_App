@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { organizationWirelessNewPath } from "../lib/organizationPaths";
+import { organizationWirelessDetailPath, organizationWirelessNewPath } from "../lib/organizationPaths";
 import {
   ensureWirelessStorageLoaded,
   listWirelessNetworks,
@@ -320,8 +320,17 @@ export function WirelessPage() {
                         className="rounded border-vault-border bg-vault-bg"
                       />
                     </td>
-                    <td className="max-w-[180px] truncate px-3 py-2 text-gray-200">
-                      {network.description || "—"}
+                    <td className="max-w-[180px] truncate px-3 py-2">
+                      {orgId && (network.description || network.ssid) ? (
+                        <Link
+                          to={organizationWirelessDetailPath(orgId, network.id)}
+                          className="text-vault-link hover:underline"
+                        >
+                          {network.description || network.ssid}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-200">—</span>
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-gray-300">
                       {network.physicalLocation || "—"}

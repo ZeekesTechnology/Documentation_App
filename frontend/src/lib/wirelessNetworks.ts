@@ -77,6 +77,13 @@ export function listWirelessNetworks(orgId: string): WirelessNetwork[] {
   return readAll(orgId);
 }
 
+export function getWirelessNetwork(
+  orgId: string,
+  networkId: string
+): WirelessNetwork | undefined {
+  return readAll(orgId).find((network) => network.id === networkId);
+}
+
 export function countWirelessNetworks(orgId: string): number {
   return readAll(orgId).filter((item) => !item.archived).length;
 }

@@ -11,6 +11,10 @@ export function organizationWirelessNewPath(orgId: string) {
   return `/organizations/${orgId}/wireless/new`;
 }
 
+export function organizationWirelessDetailPath(orgId: string, networkId: string) {
+  return `/organizations/${orgId}/wireless/${networkId}`;
+}
+
 export function isOrganizationHomePath(pathname: string, orgId: string) {
   return pathname === organizationHomePath(orgId);
 }
