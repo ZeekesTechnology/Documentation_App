@@ -112,6 +112,29 @@ export function updateQuickNotes(
   });
 }
 
+export type SystemUsageMetricKey =
+  | "assets"
+  | "configurations"
+  | "contacts"
+  | "documents"
+  | "domains"
+  | "locations"
+  | "organizations"
+  | "passwords"
+  | "related_items"
+  | "certificates"
+  | "users";
+
+export interface SystemUsageData {
+  asOf: string;
+  totals: Record<SystemUsageMetricKey, number>;
+  history: {
+    dates: string[];
+    series: Record<SystemUsageMetricKey, number[]>;
+  };
+  labels: Record<SystemUsageMetricKey, string>;
+}
+
 export interface DashboardData {
   stats: {
     organizations: number;
@@ -125,6 +148,7 @@ export interface DashboardData {
     item: string;
     dueDate: string;
   }[];
+  systemUsage: SystemUsageData;
 }
 
 export function fetchDashboard() {

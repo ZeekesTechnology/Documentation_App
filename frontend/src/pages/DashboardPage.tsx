@@ -1,6 +1,7 @@
 import { Building2, Clock, Key, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { SystemUsageSection } from "../components/dashboard/SystemUsageSection";
 import { OrgTile } from "../components/organizations/OrgTile";
 import { fetchDashboard } from "../lib/api";
 import type { DashboardData } from "../lib/api";
@@ -84,6 +85,12 @@ export function DashboardPage() {
           </ul>
         </section>
       </div>
+
+      {data.systemUsage && (
+        <div className="mt-4">
+          <SystemUsageSection data={data.systemUsage} />
+        </div>
+      )}
     </div>
   );
 }

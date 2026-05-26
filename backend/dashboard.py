@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify
 
 from db import get_connection
+from usage_stats import build_system_usage
 
 bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
@@ -30,6 +31,7 @@ def dashboard():
             ORDER BY updated_at ASC LIMIT 3
             """
         ).fetchall()
+        system_usage = build_system_usage(conn)
 
     from organizations import row_to_dict
 
@@ -50,5 +52,6 @@ def dashboard():
                 }
                 for r in expiring
             ],
+            "systemUsage": system_usage,
         }
     )
