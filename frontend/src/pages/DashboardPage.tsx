@@ -46,22 +46,26 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded border border-vault-border bg-vault-panel p-4">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-            <Clock className="h-4 w-4 text-gray-500" />
-            Recently viewed clients
-          </h2>
-          {data.recentClients.length === 0 ? (
-            <p className="text-sm text-gray-500">No recent clients yet.</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {data.recentClients.map((org) => (
-                <OrgTile key={org.id} org={org} compact />
-              ))}
-            </div>
-          )}
-        </section>
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <div className="flex flex-col gap-4">
+          <section className="rounded border border-vault-border bg-vault-panel p-4">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
+              <Clock className="h-4 w-4 text-gray-500" />
+              Recently viewed clients
+            </h2>
+            {data.recentClients.length === 0 ? (
+              <p className="text-sm text-gray-500">No recent clients yet.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {data.recentClients.map((org) => (
+                  <OrgTile key={org.id} org={org} compact />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {data.systemUsage && <SystemUsageSection data={data.systemUsage} />}
+        </div>
 
         <section className="rounded border border-vault-border bg-vault-panel p-4">
           <h2 className="mb-3 text-sm font-semibold text-white">
@@ -85,12 +89,6 @@ export function DashboardPage() {
           </ul>
         </section>
       </div>
-
-      {data.systemUsage && (
-        <div className="mt-4">
-          <SystemUsageSection data={data.systemUsage} />
-        </div>
-      )}
     </div>
   );
 }

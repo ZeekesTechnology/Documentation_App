@@ -256,7 +256,7 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
         <span className="text-[11px] text-gray-500">{formatRelativeAsOf(data.asOf)}</span>
       </div>
 
-      <div className="mb-2 grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
+      <div className="mb-2 grid grid-cols-3 gap-x-2 gap-y-1 sm:grid-cols-4">
         {METRIC_ORDER.map((key) => (
           <div key={key} className="min-w-0 text-center">
             <p className="text-sm font-semibold text-white sm:text-base">
@@ -271,13 +271,13 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
 
       <div
         ref={chartRef}
-        className="relative cursor-crosshair overflow-x-auto"
+        className="relative cursor-crosshair overflow-hidden"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setHover(null)}
       >
         <svg
           viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-          className="min-w-[480px] w-full select-none"
+          className="h-auto w-full select-none"
           role="img"
           aria-label="System usage stacked area chart for the last 60 days"
         >
