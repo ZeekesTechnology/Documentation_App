@@ -35,9 +35,19 @@ const SERIES_COLORS: Record<MetricKey, string> = {
 };
 
 const CHART_WIDTH = 920;
-const CHART_HEIGHT = 220;
-const CHART_LEFT = 56;
-const CHART_TOP = 8;
+const CHART_HEIGHT = 110;
+const CHART_LEFT = 48;
+const CHART_TOP = 4;
+const CHART_BOTTOM_PADDING = 24;
+const VIEW_WIDTH = CHART_WIDTH + 64;
+const VIEW_HEIGHT = CHART_HEIGHT + CHART_BOTTOM_PADDING;
+
+const TOOLTIP_WIDTH = 176;
+const TOOLTIP_EST_HEIGHT = 228;
+const TOOLTIP_OFFSET = 10;
+const HOVER_DOT_RADIUS = 2;
+const HOVER_CROSSHAIR_WIDTH = 0.75;
+const CHART_HIT_PADDING = 6;
 
 function formatCount(value: number): string {
   return value.toLocaleString("en-US");
@@ -171,10 +181,8 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
       if (!container || pointCount === 0) return;
 
       const rect = container.getBoundingClientRect();
-      const viewWidth = CHART_WIDTH + 72;
-      const viewHeight = CHART_HEIGHT + 48;
-      const scaleX = rect.width / viewWidth;
-      const scaleY = rect.height / viewHeight;
+      const scaleX = rect.width / VIEW_WIDTH;
+      const scaleY = rect.height / VIEW_HEIGHT;
 
       const svgX = (clientX - rect.left) / scaleX;
       const svgY = (clientY - rect.top) / scaleY;
@@ -185,12 +193,17 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
       if (
         chartX < 0 ||
         chartX > CHART_WIDTH ||
-        chartY < 0 ||
-        chartY > CHART_HEIGHT
+        chartY < -CHART_HIT_PADDING ||
+        chartY > CHART_HEIGHT + CHART_HIT_PADDING
       ) {
         setHover(null);
         return;
       }
+
+      const clampedChartY = Math.min(
+        Math.max(chartY, 0),
+        CHART_HEIGHT
+      );
 
       const index =
         pointCount === 1
@@ -200,8 +213,8 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
       setHover({
         index,
         chartX: chart.xForIndex(index),
-        chartY,
-        activeSeries: seriesAtChartY(data, index, chartY, chart.maxTotal),
+        chartY: clampedChartY,
+        activeSeries: seriesAtChartY(data, index, clampedChartY, chart.maxTotal),
         clientX,
         clientY,
       });
@@ -220,39 +233,36 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
     if (!hover || !chartRef.current) return null;
 
     const rect = chartRef.current.getBoundingClientRect();
-    const tooltipWidth = 240;
-    const tooltipHeight = 320;
-    const offset = 16;
 
-    let left = hover.clientX - rect.left + offset;
-    if (left + tooltipWidth > rect.width) {
-      left = hover.clientX - rect.left - tooltipWidth - offset;
+    let left = hover.clientX - rect.left + TOOLTIP_OFFSET;
+    if (left + TOOLTIP_WIDTH > rect.width) {
+      left = hover.clientX - rect.left - TOOLTIP_WIDTH - TOOLTIP_OFFSET;
     }
-    left = Math.max(8, Math.min(left, rect.width - tooltipWidth - 8));
+    left = Math.max(6, Math.min(left, rect.width - TOOLTIP_WIDTH - 6));
 
-    let top = hover.clientY - rect.top - tooltipHeight / 2;
-    top = Math.max(8, Math.min(top, rect.height - tooltipHeight - 8));
+    let top = hover.clientY - rect.top - TOOLTIP_EST_HEIGHT / 2;
+    top = Math.max(4, Math.min(top, rect.height - TOOLTIP_EST_HEIGHT - 4));
 
     return { left, top };
   }, [hover]);
 
   return (
-    <section className="rounded border border-vault-border bg-vault-panel p-4">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-          <Activity className="h-4 w-4 text-gray-500" />
+    <section className="rounded border border-vault-border bg-vault-panel p-3">
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold text-white">
+          <Activity className="h-3.5 w-3.5 text-gray-500" />
           System Usage (Last 60 Days)
         </h2>
-        <span className="text-xs text-gray-500">{formatRelativeAsOf(data.asOf)}</span>
+        <span className="text-[11px] text-gray-500">{formatRelativeAsOf(data.asOf)}</span>
       </div>
 
-      <div className="mb-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
+      <div className="mb-2 grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
         {METRIC_ORDER.map((key) => (
           <div key={key} className="min-w-0 text-center">
-            <p className="text-lg font-semibold text-white sm:text-xl">
+            <p className="text-sm font-semibold text-white sm:text-base">
               {formatCount(data.totals[key] ?? 0)}
             </p>
-            <p className="truncate text-xs text-gray-500">
+            <p className="truncate text-[10px] text-gray-500">
               {data.labels[key] ?? key}
             </p>
           </div>
@@ -261,13 +271,13 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
 
       <div
         ref={chartRef}
-        className="relative overflow-x-auto"
+        className="relative cursor-crosshair overflow-x-auto"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setHover(null)}
       >
         <svg
-          viewBox={`0 0 ${CHART_WIDTH + 72} ${CHART_HEIGHT + 48}`}
-          className="min-w-[760px] w-full select-none"
+          viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+          className="min-w-[480px] w-full select-none"
           role="img"
           aria-label="System usage stacked area chart for the last 60 days"
         >
@@ -283,7 +293,7 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
                   stroke="#3a3a3a"
                   strokeWidth={1}
                 />
-                <text x={48} y={y + 4} textAnchor="end" fill="#9ca3af" fontSize={11}>
+                <text x={42} y={y + 3} textAnchor="end" fill="#9ca3af" fontSize={9}>
                   {formatCount(tick)}
                 </text>
               </g>
@@ -307,10 +317,10 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
                 />
                 <text
                   x={(index / Math.max(pointCount - 1, 1)) * CHART_WIDTH}
-                  y={CHART_HEIGHT + 22}
+                  y={CHART_HEIGHT + 14}
                   textAnchor="middle"
                   fill="#9ca3af"
-                  fontSize={11}
+                  fontSize={9}
                 >
                   {data.history.dates[index]}
                 </text>
@@ -325,10 +335,12 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
                   y1={0}
                   y2={CHART_HEIGHT}
                   stroke="#ffffff"
-                  strokeWidth={1}
-                  opacity={0.85}
+                  strokeWidth={HOVER_CROSSHAIR_WIDTH}
+                  opacity={0.9}
                 />
                 {METRIC_ORDER.map((key) => {
+                  const segmentValue = data.history.series[key]?.[hover.index] ?? 0;
+                  if (segmentValue <= 0) return null;
                   const topValue = chart.stackTops[hover.index][key];
                   if (topValue === undefined) return null;
                   const y = chart.yForValue(topValue);
@@ -337,40 +349,48 @@ export function SystemUsageSection({ data }: { data: SystemUsageData }) {
                       key={key}
                       cx={hover.chartX}
                       cy={y}
-                      r={4}
+                      r={HOVER_DOT_RADIUS}
                       fill={SERIES_COLORS[key]}
                       stroke="#ffffff"
-                      strokeWidth={1.5}
+                      strokeWidth={0.75}
                     />
                   );
                 })}
               </g>
             )}
           </g>
+
+          <rect
+            x={CHART_LEFT}
+            y={CHART_TOP}
+            width={CHART_WIDTH}
+            height={CHART_HEIGHT}
+            fill="transparent"
+          />
         </svg>
 
         {hover && tooltipStyle && (
           <div
-            className="pointer-events-none absolute z-10 w-60 rounded border border-gray-200 bg-white px-3 py-2.5 text-sm shadow-xl"
+            className="pointer-events-none absolute z-10 w-44 rounded-sm border border-gray-200 bg-white px-2 py-1.5 text-[10px] leading-tight shadow-lg"
             style={tooltipStyle}
           >
-            <p className="mb-2 border-b border-gray-200 pb-2 text-center text-base font-semibold text-gray-900">
+            <p className="mb-1 border-b border-gray-200 pb-1 text-center text-[11px] font-semibold text-gray-900">
               {data.history.dates[hover.index]}
             </p>
-            <ul className="space-y-0.5">
+            <ul className="space-y-0">
               {TOOLTIP_ORDER.map((key) => {
                 const value = data.history.series[key]?.[hover.index] ?? 0;
                 const active = hover.activeSeries === key;
                 return (
                   <li
                     key={key}
-                    className={`flex items-center justify-between gap-3 rounded px-1.5 py-1 ${
+                    className={`flex items-center justify-between gap-2 rounded px-1 py-0.5 ${
                       active ? "bg-amber-100" : ""
                     }`}
                   >
-                    <span className="flex min-w-0 items-center gap-2 text-gray-800">
+                    <span className="flex min-w-0 items-center gap-1.5 text-gray-800">
                       <span
-                        className="h-3 w-3 shrink-0 rounded-sm"
+                        className="h-2 w-2 shrink-0 rounded-[2px]"
                         style={{ backgroundColor: SERIES_COLORS[key] }}
                       />
                       <span className="truncate">{data.labels[key] ?? key}</span>
