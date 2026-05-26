@@ -10,9 +10,10 @@ import {
   Plus,
   ShieldCheck,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { DocumentItemActions } from "../components/documents/DocumentItemActions";
+import { PasswordStrengthBadge } from "../components/PasswordStrengthBadge";
 import {
   addItem,
   countPasswordsInFolder,
@@ -26,6 +27,109 @@ import {
   type PasswordItem,
   type PasswordScope,
 } from "../lib/passwordItems";
+import { evaluatePasswordStrength } from "../lib/passwordStrength";
+
+const NEW_PASSWORD_OPTIONS = ["Password", "Folder"] as const;
+
+function emptyCell() {
+  return <span className="text-gray-500">—</span>;
+}
+
+function passwordSortValue(item: PasswordItem, field: SortField): string {
+  switch (field) {
+    case "name":
+      return item.name;
+    case "username":
+      return item.username ?? "";
+    case "shareable":
+      return item.passwordSharing ? "1" : "0";
+    case "type":
+      return item.kind === "password" ? "Password" : "Folder";
+    case "category":
+      return item.category ?? "";
+    case "security":
+      return evaluatePasswordStrength(item.password ?? "")?.level ?? "";
+    case "otp":
+      return item.otpSecret?.trim() ? "1" : "0";
+    case "nextRotation":
+      return item.updatedAt ?? "";
+    default:
+      return "";
+  }
+}
+
+function matchesPasswordSearch(item: PasswordItem, query: string): boolean {
+  if (!query) return true;
+  const haystack = [
+    item.name,
+    item.username,
+    item.category,
+    item.kind === "password" ? "Password" : "Folder",
+    item.passwordSharing ? "shareable yes" : "no",
+    item.otpSecret,
+    item.url,
+    item.notes,
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(query);
+}
+
+function PasswordRowFields({ item }: { item: PasswordItem }) {
+  if (item.kind === "folder") {
+    return (
+      <>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+        <td className="px-3 py-2">{emptyCell()}</td>
+      </>
+    );
+  }
+
+  const hasOtp = Boolean(item.otpSecret?.trim());
+
+  return (
+    <>
+      <td className="max-w-[180px] truncate px-3 py-2 text-gray-300">
+        {item.username?.trim() || emptyCell()}
+      </td>
+      <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+        {item.passwordSharing ? (
+          <span className="inline-flex items-center gap-1 text-vault-green">
+            <Check className="h-3.5 w-3.5" />
+            Yes
+          </span>
+        ) : (
+          "No"
+        )}
+      </td>
+      <td className="whitespace-nowrap px-3 py-2 text-gray-300">Password</td>
+      <td className="max-w-[160px] truncate px-3 py-2 text-gray-300">
+        {item.category?.trim() || emptyCell()}
+      </td>
+      <td className="px-3 py-2">
+        <PasswordStrengthBadge password={item.password} />
+      </td>
+      <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+        {hasOtp ? (
+          <span className="inline-flex items-center gap-1 text-vault-green">
+            <Check className="h-3.5 w-3.5" />
+            Configured
+          </span>
+        ) : (
+          emptyCell()
+        )}
+      </td>
+      <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+        {emptyCell()}
+      </td>
+    </>
+  );
+}
 
 type PasswordTab = PasswordScope;
 type SortField =
@@ -38,8 +142,6 @@ type SortField =
   | "otp"
   | "nextRotation";
 type SortOrder = "asc" | "desc";
-
-const NEW_PASSWORD_OPTIONS = ["Password", "Folder"] as const;
 
 function SortableTh({
   label,
@@ -110,6 +212,25 @@ export function PasswordsPage() {
     void ensurePasswordStorageLoaded(orgId).then(() => {
       setItems(refreshItems(orgId, parentId, scope));
     });
+
+    const handleStorageChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ orgId: string }>).detail;
+      if (detail?.orgId === orgId) {
+        setItems(refreshItems(orgId, parentId, scope));
+      }
+    };
+
+    window.addEventListener(
+      "menschdocs-asset-storage-changed",
+      handleStorageChange
+    );
+
+    return () => {
+      window.removeEventListener(
+        "menschdocs-asset-storage-changed",
+        handleStorageChange
+      );
+    };
   }, [orgId, parentId, scope]);
 
   useEffect(() => {
@@ -119,13 +240,22 @@ export function PasswordsPage() {
     }
   }, [editingItemId]);
 
-  const filteredItems = items.filter((item) => {
-    const q = search.trim().toLowerCase();
-    return !q || item.name.toLowerCase().includes(q);
-  });
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return items.filter((item) => matchesPasswordSearch(item, query));
+  }, [items, search]);
+
+  const visibleItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      const left = passwordSortValue(a, sort).toLowerCase();
+      const right = passwordSortValue(b, sort).toLowerCase();
+      const cmp = left.localeCompare(right);
+      return order === "asc" ? cmp : -cmp;
+    });
+  }, [filteredItems, sort, order]);
 
   const total = items.length;
-  const countLabel = `${filteredItems.length} of ${total}`;
+  const countLabel = `${visibleItems.length} of ${total}`;
 
   useEffect(() => {
     if (!newMenuOpen) return;
@@ -394,7 +524,7 @@ export function PasswordsPage() {
                     <input
                       type="checkbox"
                       className="rounded border-vault-border bg-vault-bg"
-                      disabled={filteredItems.length === 0}
+                      disabled={visibleItems.length === 0}
                     />
                     <ChevronDown className="h-3 w-3" />
                   </span>
@@ -464,7 +594,7 @@ export function PasswordsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.length === 0 ? (
+              {visibleItems.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-3 py-16">
                     <div className="flex flex-col items-center justify-center text-center">
@@ -477,7 +607,7 @@ export function PasswordsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredItems.map((item) => {
+                visibleItems.map((item) => {
                   const passwordCount =
                     orgId && item.kind === "folder"
                       ? countPasswordsInFolder(orgId, item.id)
@@ -536,13 +666,7 @@ export function PasswordsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-gray-500" />
-                      <td className="px-3 py-2 text-gray-500" />
-                      <td className="px-3 py-2 text-gray-500" />
-                      <td className="px-3 py-2 text-gray-500" />
-                      <td className="px-3 py-2" />
-                      <td className="px-3 py-2 text-gray-500" />
-                      <td className="px-3 py-2 text-gray-500" />
+                      <PasswordRowFields item={item} />
                       <td className="px-3 py-2">
                         <DocumentItemActions
                           onEdit={() => startEditing(item)}
