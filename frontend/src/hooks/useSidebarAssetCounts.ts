@@ -3,6 +3,10 @@ import { useLocation } from "react-router-dom";
 import { useOrgAssetCounts } from "../contexts/OrgAssetCountsContext";
 import { countAllDocumentItems, ensureDocumentStorageLoaded } from "../lib/documentFolders";
 import { countAllPasswordEntries, ensurePasswordStorageLoaded } from "../lib/passwordItems";
+import {
+  countWirelessNetworks,
+  ensureWirelessStorageLoaded,
+} from "../lib/wirelessNetworks";
 import { EMPTY_ASSET_COUNTS, type AssetCounts, type AssetType } from "../types/assets";
 
 export function useSidebarAssetCounts(orgId: string | null): AssetCounts {
@@ -16,6 +20,7 @@ export function useSidebarAssetCounts(orgId: string | null): AssetCounts {
     void Promise.all([
       ensurePasswordStorageLoaded(orgId),
       ensureDocumentStorageLoaded(orgId),
+      ensureWirelessStorageLoaded(orgId),
     ]).then(() => {
       setStorageRevision((revision) => revision + 1);
     });
@@ -50,6 +55,7 @@ export function useSidebarAssetCounts(orgId: string | null): AssetCounts {
       ...backendCounts,
       documents: countAllDocumentItems(orgId),
       passwords: countAllPasswordEntries(orgId),
+      wireless: countWirelessNetworks(orgId),
     };
   }, [orgId, backendCounts, storageRevision]);
 }

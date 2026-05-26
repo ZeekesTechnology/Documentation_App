@@ -8,7 +8,7 @@ from db import get_connection
 
 bp = Blueprint("org_storage", __name__, url_prefix="/api/organizations")
 
-ALLOWED_KEYS = frozenset({"passwords", "documents"})
+ALLOWED_KEYS = frozenset({"passwords", "documents", "wireless"})
 
 
 def _now() -> str:

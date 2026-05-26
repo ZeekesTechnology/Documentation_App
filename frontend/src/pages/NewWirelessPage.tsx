@@ -1,7 +1,11 @@
 import { Copy, Eye, EyeOff, MapPin } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { organizationAssetPath } from "../lib/organizationPaths";
+import {
+  addWirelessNetwork,
+  ensureWirelessStorageLoaded,
+} from "../lib/wirelessNetworks";
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -95,6 +99,7 @@ function TextField({
 
 export function NewWirelessPage() {
   const { id: orgId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [description, setDescription] = useState("");
   const [physicalLocation, setPhysicalLocation] = useState("");
   const [ssid, setSsid] = useState("");
@@ -104,8 +109,44 @@ export function NewWirelessPage() {
   const [managementIp, setManagementIp] = useState("");
   const [managementUsername, setManagementUsername] = useState("");
   const [managementPassword, setManagementPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const wirelessPath = orgId ? organizationAssetPath(orgId, "wireless") : "/organizations";
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!orgId) return;
+
+    const trimmedDescription = description.trim();
+    const trimmedSsid = ssid.trim();
+    if (!trimmedDescription && !trimmedSsid) {
+      setError("Enter a wireless network description or SSID.");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      await ensureWirelessStorageLoaded(orgId);
+      addWirelessNetwork(orgId, {
+        description: trimmedDescription,
+        physicalLocation: physicalLocation.trim(),
+        ssid: trimmedSsid,
+        encryptionType: encryptionType.trim(),
+        preSharedKey,
+        accessPoints: accessPoints.trim(),
+        managementIp: managementIp.trim(),
+        managementUsername: managementUsername.trim(),
+        managementPassword,
+      });
+      navigate(wirelessPath);
+    } catch {
+      setError("Could not save wireless network. Please try again.");
+      setSaving(false);
+    }
+  };
 
   if (!orgId) {
     return <p className="p-4 text-sm text-red-400">Organization not found.</p>;
@@ -120,7 +161,7 @@ export function NewWirelessPage() {
 
       <form
         className="max-w-3xl rounded border border-vault-border bg-vault-panel px-4 py-2"
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={(event) => void handleSubmit(event)}
       >
         <TextField
           label="Wireless Network Description"
@@ -174,10 +215,15 @@ export function NewWirelessPage() {
           <Link to={wirelessPath} className="btn-secondary">
             Cancel
           </Link>
-          <button type="submit" className="btn-primary">
-            Save
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? "Saving…" : "Save"}
           </button>
         </div>
+        {error && (
+          <p className="pb-4 text-sm text-red-400" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   );

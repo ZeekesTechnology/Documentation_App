@@ -6,9 +6,15 @@ import {
   Inbox,
   Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { organizationWirelessNewPath } from "../lib/organizationPaths";
+import {
+  ensureWirelessStorageLoaded,
+  listWirelessNetworks,
+  maskSecret,
+  type WirelessNetwork,
+} from "../lib/wirelessNetworks";
 
 type SortField =
   | "description"
@@ -51,15 +57,107 @@ function SortableTh({
   );
 }
 
+function sortValue(network: WirelessNetwork, field: SortField): string {
+  switch (field) {
+    case "description":
+      return network.description;
+    case "physicalLocation":
+      return network.physicalLocation;
+    case "ssid":
+      return network.ssid;
+    case "encryptionType":
+      return network.encryptionType;
+    case "preSharedKey":
+      return network.preSharedKey;
+    case "accessPoints":
+      return network.accessPoints;
+    case "wirelessControllers":
+      return "";
+    case "managementIp":
+      return network.managementIp;
+    case "old":
+      return network.managementUsername;
+    default:
+      return "";
+  }
+}
+
+function matchesSearch(network: WirelessNetwork, query: string): boolean {
+  if (!query) return true;
+  const haystack = [
+    network.description,
+    network.physicalLocation,
+    network.ssid,
+    network.encryptionType,
+    network.accessPoints,
+    network.managementIp,
+    network.managementUsername,
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(query);
+}
+
 export function WirelessPage() {
   const { id: orgId } = useParams<{ id: string }>();
   const [search, setSearch] = useState("");
   const [includeArchived, setIncludeArchived] = useState(false);
   const [sort, setSort] = useState<SortField>("description");
   const [order, setOrder] = useState<SortOrder>("asc");
+  const [networks, setNetworks] = useState<WirelessNetwork[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-  const totalCount = 0;
-  const visibleCount = 0;
+  useEffect(() => {
+    if (!orgId) return;
+
+    let cancelled = false;
+
+    const load = async () => {
+      await ensureWirelessStorageLoaded(orgId);
+      if (!cancelled) {
+        setNetworks(listWirelessNetworks(orgId));
+        setLoaded(true);
+      }
+    };
+
+    void load();
+
+    const handleStorageChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ orgId: string }>).detail;
+      if (detail?.orgId === orgId) {
+        setNetworks(listWirelessNetworks(orgId));
+      }
+    };
+
+    window.addEventListener(
+      "menschdocs-asset-storage-changed",
+      handleStorageChange
+    );
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener(
+        "menschdocs-asset-storage-changed",
+        handleStorageChange
+      );
+    };
+  }, [orgId]);
+
+  const filteredNetworks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return networks
+      .filter((network) => includeArchived || !network.archived)
+      .filter((network) => matchesSearch(network, query))
+      .sort((a, b) => {
+        const left = sortValue(a, sort).toLowerCase();
+        const right = sortValue(b, sort).toLowerCase();
+        const cmp = left.localeCompare(right);
+        return order === "asc" ? cmp : -cmp;
+      });
+  }, [networks, search, includeArchived, sort, order]);
+
+  const totalCount = networks.filter((network) => !network.archived).length;
+  const visibleCount = filteredNetworks.length;
   const countLabel = `${visibleCount} of ${totalCount}`;
 
   const handleSort = (field: SortField) => {
@@ -192,17 +290,67 @@ export function WirelessPage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colSpan={11} className="px-3 py-16">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <Inbox
-                      className="mb-3 h-12 w-12 text-gray-600"
-                      strokeWidth={1.25}
-                    />
-                    <p className="text-sm text-gray-400">No Wireless</p>
-                  </div>
-                </td>
-              </tr>
+              {!loaded ? (
+                <tr>
+                  <td colSpan={11} className="px-3 py-8 text-center text-sm text-gray-500">
+                    Loading…
+                  </td>
+                </tr>
+              ) : filteredNetworks.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="px-3 py-16">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <Inbox
+                        className="mb-3 h-12 w-12 text-gray-600"
+                        strokeWidth={1.25}
+                      />
+                      <p className="text-sm text-gray-400">No Wireless</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredNetworks.map((network) => (
+                  <tr
+                    key={network.id}
+                    className="border-b border-vault-border/60 hover:bg-vault-bg/30"
+                  >
+                    <td className="px-2 py-2">
+                      <input
+                        type="checkbox"
+                        className="rounded border-vault-border bg-vault-bg"
+                      />
+                    </td>
+                    <td className="max-w-[180px] truncate px-3 py-2 text-gray-200">
+                      {network.description || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.physicalLocation || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.ssid || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.encryptionType || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 font-mono text-gray-400">
+                      {maskSecret(network.preSharedKey) || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.accessPoints || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-500">
+                      —
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.managementIp || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                      {network.managementUsername || "—"}
+                    </td>
+                    <td className="px-3 py-2" />
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

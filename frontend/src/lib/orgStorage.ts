@@ -1,6 +1,7 @@
 export const ORG_STORAGE_KEYS = {
   passwords: "passwords",
   documents: "documents",
+  wireless: "wireless",
 } as const;
 
 export type OrgStorageKey =
@@ -14,9 +15,13 @@ function cacheId(orgId: string, storageKey: OrgStorageKey) {
 }
 
 function legacyBrowserKey(orgId: string, storageKey: OrgStorageKey) {
-  return storageKey === ORG_STORAGE_KEYS.passwords
-    ? `menschdocs-passwords-${orgId}`
-    : `menschdocs-folders-${orgId}`;
+  if (storageKey === ORG_STORAGE_KEYS.passwords) {
+    return `menschdocs-passwords-${orgId}`;
+  }
+  if (storageKey === ORG_STORAGE_KEYS.documents) {
+    return `menschdocs-folders-${orgId}`;
+  }
+  return `menschdocs-wireless-${orgId}`;
 }
 
 function readLegacyBrowserStorage(orgId: string, storageKey: OrgStorageKey) {
